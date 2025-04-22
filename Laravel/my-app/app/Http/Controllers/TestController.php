@@ -7,6 +7,6 @@ class TestController extends Controller
 {
     public function test():string
     {
-        return "test";
+        return phpinfo();
     }
 }

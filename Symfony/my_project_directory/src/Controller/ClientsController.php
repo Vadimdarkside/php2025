@@ -35,28 +35,25 @@ class ClientsController extends AbstractController
     public function create(Request $request):Response
     {
         $client = new Clients();
-        $client->setFirstName('Іван');
-        $client->setLastName('Коваленко');
-        $client->setEmail('ivan@gmail.com');
-        $client->setPhone('+380501112233');
-        $client->setRegistrationDate(new \DateTime());
+        // $client->setFirstName('Іван');
+        // $client->setLastName('Коваленко');
+        // $client->setEmail('ivan@gmail.com');
+        // $client->setPhone('+380501112233');
+        // $client->setRegistrationDate(new \DateTime());
     
-        $this->em->persist($client);
-        $this->em->flush();
-        // $form = $this->createForm(ClientFormType::class,$client);
-        // $form->handleRequest($request);
-        // if($form->isSubmitted() && $form->isValid())
-        // {
-        //     $newClient = $form->getData();
-        //     dd($newClient);
-        //     exit;
-        // }
-
-        return new Response('Клієнта успішно додано!',
-    // [
-    //     'form'=>$form->createView()
-    // ]
-    );
+        $form = $this->createForm(ClientFormType::class,$client);
+        $form->handleRequest($request);
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $newClient = $form->getData();
+            $this->em->persist($client);
+            $this->em->flush();
+        }
+        
+        return $this->render('lab3GymView/ClientCreate.html.twig',
+        [
+            'form'=>$form->createView()
+        ]);
     }
 
     #[Route('/clients/update/{id}', name: 'clients_update')]

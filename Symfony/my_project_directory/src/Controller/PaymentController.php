@@ -2,109 +2,103 @@
 
 namespace App\Controller;
 
-use App\Entity\Clients;
-use App\Form\ClientFormType;
+use App\Entity\Payments;
+use App\Repository\PaymentsRepository;
 use App\Repository\ClientsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Attribute\Route;
-class ClientsController extends AbstractController
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Annotation\Route;
+
+class PaymentController extends AbstractController
 {
+    private $paymentsRepository;
     private $clientsRepository;
     private $em;
-    public function __construct(ClientsRepository $repo, EntityManagerInterface $manager)
-    {
-        $this->clientsRepository = $repo;
-        $this->em = $manager;
+
+    public function __construct(
+        PaymentsRepository $paymentsRepository,
+        ClientsRepository $clientsRepository,
+        EntityManagerInterface $em
+    ) {
+        $this->paymentsRepository = $paymentsRepository;
+        $this->clientsRepository = $clientsRepository;
+        $this->em = $em;
     }
 
-    #[Route('/clients',methods:['GET'], name:'clients')]
-    public function index():Response
+    #[Route('/payments', methods: ['GET'], name: 'payments')]
+    public function index(): Response
     {
-        $clients = $this->clientsRepository->findAll();
-        dd($clients);
-        return $this->render('lab3GymView/index.html.twig',
-    [
-        'clients'=>$clients
-    ]);
+        $payments = $this->paymentsRepository->findAll();
+        dd($payments);
+        return $this->render('lab3GymView/payments.html.twig', [
+            'payments' => $payments
+        ]);
     }
 
-    #[Route('/clients/create', name:'clients_create')]
-    public function create(Request $request):Response
+    #[Route('/payments/{id}', methods: ['GET'], name: 'payments_id')]
+    public function show($id): Response
     {
-        $client = new Clients();
-        $client->setFirstName('Іван');
-        $client->setLastName('Коваленко');
-        $client->setEmail('ivan@gmail.com');
-        $client->setPhone('+380501112233');
-        $client->setRegistrationDate(new \DateTime());
-    
-        $this->em->persist($client);
+        $payment = $this->paymentsRepository->find($id);
+        if (!$payment) {
+            return new Response('Платіж не знайдено!', 404);
+        }
+
+        return $this->render('lab3GymView/showPayment.html.twig', [
+            'payment' => $payment
+        ]);
+    }
+
+    #[Route('/payments/create', name: 'payments_create')]
+    public function create(Request $request): Response
+    {
+        $payment = new Payments();
+
+        $client = $this->clientsRepository->find(1); 
+        $payment->setClientId($client);
+        $payment->setAmount('999.99');
+        $payment->setPaymentDate(new \DateTime());
+        $payment->setMethod('Готівка');
+
+        $this->em->persist($payment);
         $this->em->flush();
-        // $form = $this->createForm(ClientFormType::class,$client);
-        // $form->handleRequest($request);
-        // if($form->isSubmitted() && $form->isValid())
-        // {
-        //     $newClient = $form->getData();
-        //     dd($newClient);
-        //     exit;
-        // }
 
-        return new Response('Клієнта успішно додано!',
-    // [
-    //     'form'=>$form->createView()
-    // ]
-    );
+        return new Response('Платіж успішно створено!');
     }
 
-    #[Route('/clients/update/{id}', name: 'clients_update')]
+    #[Route('/payments/update/{id}', name: 'payments_update')]
     public function update($id, Request $request): Response
     {
-        $client = $this->clientsRepository->find($id);
-        if (!$client) {
-            return new Response('Клієнта не знайдено!', 404);
-        }
-        $client->setFirstName('NewName');
-        $client->setLastName('NewLast');
-        $client->setEmail('new_email@example.com');
-        $client->setPhone('+380991112233');
-        $client->setRegistrationDate(new \DateTime());
-        $this->em->flush(); 
-
-        return new Response('Клієнта успішно оновлено!');
-    }
-
-    #[Route('/clients/delete/{id}', name: 'clients_delete')]
-    public function delete($id): Response
-    {
-        $client = $this->clientsRepository->find($id);
-
-        if (!$client) {
-            return new Response('Клієнта не знайдено!', 404);
+        $payment = $this->paymentsRepository->find($id);
+        if (!$payment) {
+            return new Response('Платіж не знайдено!', 404);
         }
 
-        $this->em->remove($client);
+        $client = $this->clientsRepository->find(2);
+        $payment->setClientId($client);
+        $payment->setAmount('123.45');
+        $payment->setPaymentDate(new \DateTime());
+        $payment->setMethod('Карта');
+
         $this->em->flush();
 
-        return new Response('Клієнта успішно видалено!');
+        return new Response('Платіж успішно оновлено!');
     }
 
-
-
-    #[Route('/clients/{id}',methods:['GET'], name:'clientsId')]
-    public function show($id):Response
+ 
+    #[Route('/payments/delete/{id}', name: 'payments_delete')]
+    public function delete($id): Response
     {
-        $client = $this->clientsRepository->find($id);
-        dd($client);
-        return $this->render('lab3GymView/index.html.twig',
-    [
-        'clients'=>$client
-    ]);
+        $payment = $this->paymentsRepository->find($id);
+
+        if (!$payment) {
+            return new Response('Платіж не знайдено!', 404);
+        }
+
+        $this->em->remove($payment);
+        $this->em->flush();
+
+        return new Response('Платіж успішно видалено!');
     }
-
-    
-
 }
-

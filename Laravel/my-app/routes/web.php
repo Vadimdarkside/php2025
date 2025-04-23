@@ -5,6 +5,7 @@ use App\Http\Controllers\TestController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TrainerController;
+use App\Http\Controllers\WorkoutController;
 
 Route::get('/', function () {
     return view('home');
@@ -21,3 +22,9 @@ Route::post('create-trainer',[TrainerController::class, 'create']);
 Route::get('/trainers/edit/{id}', [TrainerController::class, 'showUpdateForm']);
 Route::post('trainers/edit/update-trainer/{id}', [TrainerController::class, 'update']);
 Route::delete('trainers/delete/{id}', [TrainerController::class, 'delete']);
+
+Route::get('/programs', [WorkoutController::class, "read"]);
+Route::post('create-program',[WorkoutController::class, 'create']);
+Route::get('/programs/edit/{id}', [WorkoutController::class, 'showUpdateForm']);
+Route::post('programs/edit/update-program/{id}', [WorkoutController::class, 'update']);
+Route::delete('programs/delete/{id}', [WorkoutController::class, 'delete']);

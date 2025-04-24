@@ -27,6 +27,30 @@
     </div>
     <button type="submit">Submit</button>
 </form>
+
+<h1>Filter</h1>
+
+    <form action="{{route('/programs')}}" method="GET">
+        <div>
+            <label for="trainer_id">Filter by trainer:</label>
+            <input type="integer" name="trainer_id" id="trainer_id" value="{{ request('trainer_id') }}">
+        </div>
+        <div>
+            <label for="name">Filter by Name:</label>
+            <input type="text" name="name" id="name" value="{{ request('name') }}">
+        </div>
+        <div>
+            <label for="description">Filter by description:</label>
+            <input type="description" name="description" id="description" value="{{ request('description') }}">
+        </div>
+        <div>
+            <label for="duration">Filter by duration:</label>
+            <input type="text" name="duration" id="duration" value="{{ request('duration') }}">
+        </div>
+        <input type="hidden" name="filter" value="true">
+        <button type="submit">Apply Filters</button>
+    </form>
+
 <table cellpadding="10">
     <thead>
         <tr>
@@ -39,6 +63,7 @@
         </tr>
     </thead>
     <tbody>
+        @if (!empty($programs))
         @foreach($programs as $program)
             <tr>
                 <td>{{ $program->id }}</td>
@@ -56,6 +81,9 @@
                 </td>
             </tr>
         @endforeach
+        @else
+        <div>No clients</div>
+       @endif
     </tbody>
 </table>
 </body>

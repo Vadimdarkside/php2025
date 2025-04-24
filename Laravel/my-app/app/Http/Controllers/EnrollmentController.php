@@ -7,9 +7,32 @@ use Illuminate\Http\Request;
 
 class EnrollmentController
 {
-    public function read()
+    public function read(Request $request)
     {
-        $enrolls = Enrollment::all();
+        if($request->get('filter'))
+        {
+            $client_id = $request->get('client_id');
+            $program_id = $request->get('program_id');
+            $start_date = $request->get('start_date');
+            $status = $request->get('status');
+            $enrolls = Enrollment::query();
+            if ($client_id) {
+                $enrolls->where('client_id', $client_id);
+            }
+            if ($program_id) {
+                $enrolls->where('program_id', $program_id );
+            }
+            if ($start_date) {
+                $enrolls->whereDate('start_date', $start_date);
+            }
+            if ($status) {
+                $enrolls->where('status', $status );
+            }
+            $enrolls = $enrolls->get(); 
+
+            return view('enrollments/enroll', ['enrolls' => $enrolls]);
+        }
+        $enrolls = Enrollment::all(); 
         return view('enrollments/enroll', ['enrolls' => $enrolls]);
     }
     public function create(Request $request)

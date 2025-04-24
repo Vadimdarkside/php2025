@@ -8,8 +8,31 @@ use Illuminate\Routing\Controller;
 
 class WorkoutController extends Controller
 {
-    public function read()
+    public function read(Request $request)
     {
+        if($request->get('filter'))
+        {
+            $name = $request->get('name');
+            $trainer_id = $request->get('trainer_id');
+            $description = $request->get('description');
+            $duration = $request->get('duration');
+            $programs = WorkoutProgram::query();
+            if ($name) {
+                $programs->where('name', 'like', '%' . $name . '%');
+            }
+            if ($trainer_id) {
+                $programs->where('trainer_id', $trainer_id );
+            }
+            if ($description) {
+                $programs->where('description', 'like', '%' . $description . '%');
+            }
+            if ($duration) {
+                $programs->where('duration', $duration );
+            }
+            $programs = $programs->get();
+
+            return view('workouts/programs', ['programs' => $programs]);
+        }
         $programs = WorkoutProgram::all();
         return view('workouts/programs', ['programs' => $programs]);
     }

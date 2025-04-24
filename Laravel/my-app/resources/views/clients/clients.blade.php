@@ -33,6 +33,35 @@
 
     <button type="submit">Submit</button>
 </form>
+
+<h1>Filter</h1>
+
+    <form action="{{route('/clients')}}" method="GET">
+        <div>
+            <label for="first_name">Filter by First Name:</label>
+            <input type="text" name="first_name" id="first_name" value="{{ request('first_name') }}">
+        </div>
+        <div>
+            <label for="last_name">Filter by Last Name:</label>
+            <input type="text" name="last_name" id="last_name" value="{{ request('last_name') }}">
+        </div>
+        <div>
+            <label for="email">Filter by Email:</label>
+            <input type="email" name="email" id="email" value="{{ request('email') }}">
+        </div>
+        <div>
+            <label for="phone">Filter by Phone:</label>
+            <input type="text" name="phone" id="phone" value="{{ request('phone') }}">
+        </div>
+        <div>
+            <label for="registration_date">Filter by Registration Date:</label>
+            <input type="date" name="registration_date" id="registration_date" value="{{ request('registration_date') }}">
+        </div>
+        <input type="hidden" name="filter" value="true">
+        <button type="submit">Apply Filters</button>
+    </form>
+
+
 <table cellpadding="10">
     <thead>
         <tr>
@@ -46,6 +75,7 @@
         </tr>
     </thead>
     <tbody>
+       @if ($clients)
         @foreach($clients as $client)
             <tr>
                 <td>{{ $client->id }}</td>
@@ -64,6 +94,9 @@
                 </td>
             </tr>
         @endforeach
+        @else
+        <div>No clients</div>
+       @endif
     </tbody>
 </table>
 </body>

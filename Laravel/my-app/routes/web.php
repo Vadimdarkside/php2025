@@ -14,7 +14,7 @@ Route::get('/', function () {
     return view('home');
 });
 
-Route::get('/clients', [ClientController::class, 'read']);
+Route::get('/clients', [ClientController::class, 'read'])->name('/clients');
 Route::post('create-client',[ClientController::class, 'create']);
 Route::get('/clients/edit/{id}', [ClientController::class, 'showUpdateForm']);
 Route::post('clients/edit/update-client/{id}', [ClientController::class, 'update']);

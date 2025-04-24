@@ -8,8 +8,35 @@ use Illuminate\Routing\Controller;
 
 class ClientController extends Controller
 {
-    public function read()
+    public function read(Request $request)
     {
+        if($request->get('filter'))
+        {
+            $first_name = $request->get('first_name');
+            $last_name = $request->get('last_name');
+            $email = $request->get('email');
+            $phone = $request->get('phone');
+            $registration_date = $request->get('registration_date');
+            $clients = Client::query();
+            if ($first_name) {
+                $clients->where('first_name', 'like', '%' . $first_name . '%');
+            }
+            if ($last_name) {
+                $clients->where('last_name', 'like', '%' . $last_name . '%');
+            }
+            if ($email) {
+                $clients->where('email', 'like', '%' . $email . '%');
+            }
+            if ($phone) {
+                $clients->where('phone', 'like', '%' . $phone . '%');
+            }
+            if ($registration_date) {
+                $clients->whereYear('registration_date', $registration_date);
+            }
+            $clients = $clients->get();
+
+            return view('clients/clients', ['clients' => $clients]);
+        }
         $clients = Client::all();
         return view('clients/clients', ['clients' => $clients]);
     }
@@ -19,6 +46,7 @@ class ClientController extends Controller
             "first_name"=>'required',
             "last_name"=>'required',
             "email"=>'required',
+            "phone"=>'required',
             "registration_date" => 'required'
         ]);
         Client::create($incomeFields);
@@ -36,6 +64,7 @@ class ClientController extends Controller
             "first_name"=>'required',
             "last_name"=>'required',
             "email"=>'required',
+            "phone"=>'required'
         ]);
         $client->update($incomeFields);
         return redirect('/clients');

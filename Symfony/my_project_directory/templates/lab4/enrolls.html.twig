@@ -1,0 +1,44 @@
+<h2>Записи на тренування</h2>
+
+<form method="GET" action="{{ path('enrollments') }}">
+    <input type="hidden" name="filter" value="true">
+
+    <label>Клієнт (ID):</label>
+    <input type="number" name="client_id" value="{{ app.request.get('client_id') }}">
+
+    <label>Програма тренувань (ID):</label>
+    <input type="number" name="program_id" value="{{ app.request.get('program_id') }}">
+
+    <label>Дата початку:</label>
+    <input type="date" name="start_date" value="{{ app.request.get('start_date') }}">
+
+    <label>Статус:</label>
+    <input type="text" name="status" value="{{ app.request.get('status') }}">
+
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Клієнт</th>
+            <th>Програма тренувань</th>
+            <th>Дата початку</th>
+            <th>Статус</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for enrollment in enrollments %}
+            <tr>
+                <td>{{ enrollment.clientId.id }}</td>
+                <td>{{ enrollment.programId.id }}</td>
+                <td>{{ enrollment.startDate|date('Y-m-d') }}</td>
+                <td>{{ enrollment.status }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Немає результатів</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

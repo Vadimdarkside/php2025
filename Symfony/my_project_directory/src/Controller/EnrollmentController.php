@@ -32,12 +32,44 @@ class EnrollmentController extends AbstractController
     }
 
     #[Route('/enrollments', methods: ['GET'], name: 'enrollments')]
-    public function index(): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $enrollments = $this->enrollmentsRepository->findAll();
-        dd($enrollments); 
-        return $this->render('lab3GymView/index.html.twig', [
-            'enrollments' => $enrollments
+        $repo = $em->getRepository(Enrollments::class);
+        $qb = $repo->createQueryBuilder('e');
+
+        if ($request->query->get('filter')) {
+            $client_id = $request->query->get('client_id');
+            $program_id = $request->query->get('program_id');
+            $start_date = $request->query->get('start_date');
+            $status = $request->query->get('status');
+
+            if ($client_id) {
+                $qb->andWhere('e.client_id = :client_id')
+                   ->setParameter('client_id', $client_id);
+            }
+
+            if ($program_id) {
+                $qb->andWhere('e.program_id = :program_id')
+                   ->setParameter('program_id', $program_id);
+            }
+
+            if ($start_date) {
+                $qb->andWhere('e.start_date >= :start_date')
+                   ->setParameter('start_date', $start_date);
+            }
+
+            if ($status) {
+                $qb->andWhere('e.status LIKE :status')
+                   ->setParameter('status', '%' . $status . '%');
+            }
+
+            $enrollments = $qb->getQuery()->getResult();
+        } else {
+            $enrollments = $repo->findAll();
+        }
+
+        return $this->render('lab4/enrolls.html.twig', [
+            'enrollments' => $enrollments,
         ]);
     }
 

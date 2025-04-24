@@ -1,0 +1,61 @@
+<h1>Список клієнтів</h1>
+
+<form method="GET" action="{{ path('clients') }}">
+    <input type="hidden" name="filter" value="true">
+
+    <div>
+        <label>Ім’я:</label>
+        <input type="text" name="first_name" value="{{ filters.first_name ?? '' }}">
+    </div>
+
+    <div>
+        <label>Прізвище:</label>
+        <input type="text" name="last_name" value="{{ filters.last_name ?? '' }}">
+    </div>
+
+    <div>
+        <label>Email:</label>
+        <input type="email" name="email" value="{{ filters.email ?? '' }}">
+    </div>
+
+    <div>
+        <label>Телефон:</label>
+        <input type="text" name="phone" value="{{ filters.phone ?? '' }}">
+    </div>
+
+    <div>
+        <label>Рік реєстрації:</label>
+        <input type="number" name="registration_date" placeholder="напр. 2024" value="{{ filters.registration_date ?? '' }}">
+    </div>
+
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<hr>
+
+{% if clients is empty %}
+    <p>Немає клієнтів за заданими критеріями.</p>
+{% else %}
+    <table cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Ім’я</th>
+                <th>Прізвище</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Дата реєстрації</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+                <tr>
+                    <td>{{ client.firstName }}</td>
+                    <td>{{ client.lastName }}</td>
+                    <td>{{ client.email }}</td>
+                    <td>{{ client.phone }}</td>
+                    <td>{{ client.registrationDate|date('Y-m-d') }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

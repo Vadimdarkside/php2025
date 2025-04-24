@@ -6,10 +6,11 @@ use App\Entity\Clients;
 use App\Form\ClientFormType;
 use App\Repository\ClientsRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
 class ClientsController extends AbstractController
 {
     private $clientsRepository;
@@ -21,15 +22,66 @@ class ClientsController extends AbstractController
     }
 
     #[Route('/clients',methods:['GET'], name:'clients')]
-    public function index():Response
+    public function index(Request $request, EntityManagerInterface $em)
     {
-        $clients = $this->clientsRepository->findAll();
-        dd($clients);
-        return $this->render('lab3GymView/index.html.twig',
-    [
-        'clients'=>$clients
-    ]);
+        $repo = $em->getRepository(Clients::class);
+        $qb = $repo->createQueryBuilder('c');
+
+        if ($request->query->get('filter')) {
+            $first_name = $request->query->get('first_name');
+            $last_name = $request->query->get('last_name');
+            $email = $request->query->get('email');
+            $phone = $request->query->get('phone');
+            $registration_date = $request->query->get('registration_date');
+
+            if ($first_name) {
+                $qb->andWhere('c.first_name LIKE :first_name')
+                ->setParameter('first_name', '%' . $first_name . '%');
+            }
+
+            if ($last_name) {
+                $qb->andWhere('c.last_name LIKE :last_name')
+                ->setParameter('last_name', '%' . $last_name . '%');
+            }
+
+            if ($email) {
+                $qb->andWhere('c.email LIKE :email')
+                ->setParameter('email', '%' . $email . '%');
+            }
+
+            if ($phone) {
+                $qb->andWhere('c.phone LIKE :phone')
+                ->setParameter('phone', '%' . $phone . '%');
+            }
+
+            if ($registration_date) {
+                $year = $registration_date;
+                $startDate = new \DateTime("$year-01-01");
+                $endDate = new \DateTime("$year-12-31 23:59:59");
+            
+                $qb->andWhere('c.registration_date BETWEEN :start AND :end')
+                   ->setParameter('start', $startDate)
+                   ->setParameter('end', $endDate);
+            }
+
+            $clients = $qb->getQuery()->getResult();
+        } else {
+            $clients = $repo->findAll();
+        }
+
+        return $this->render('lab4/clients.html.twig', [
+            'clients' => $clients,
+        ]);
     }
+    // public function index():Response
+    // {
+    //     $clients = $this->clientsRepository->findAll();
+    //     dd($clients);
+    //     return $this->render('lab3GymView/index.html.twig',
+    // [
+    //     'clients'=>$clients
+    // ]);
+    // }
 
     #[Route('/clients/create', name:'clients_create')]
     public function create(Request $request):Response
@@ -40,13 +92,13 @@ class ClientsController extends AbstractController
         // $client->setEmail('ivan@gmail.com');
         // $client->setPhone('+380501112233');
         // $client->setRegistrationDate(new \DateTime());
-    
-        $form = $this->createForm(ClientFormType::class,$client);
+        
+        $form = $this->createForm(ClientFormType::class,$client);//Такий підхід використав лише раз
         $form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid())
         {
             $newClient = $form->getData();
-            $this->em->persist($client);
+            $this->em->persist($newClient);
             $this->em->flush();
         }
         

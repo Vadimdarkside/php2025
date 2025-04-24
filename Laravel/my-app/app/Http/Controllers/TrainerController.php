@@ -8,8 +8,32 @@ use Illuminate\Routing\Controller;
 
 class TrainerController extends Controller
 {
-    public function read()
+    public function read(Request $request)
     {
+        if($request->get('filter'))
+        {
+            $first_name = $request->get('first_name');
+            $last_name = $request->get('last_name');
+            $email = $request->get('email');
+            $specialty = $request->get('specialty');
+            $trainers = Trainer::query();
+            if ($first_name) {
+                $trainers->where('first_name', 'like', '%' . $first_name . '%');
+            }
+            if ($last_name) {
+                $trainers->where('last_name', 'like', '%' . $last_name . '%');
+            }
+            if ($email) {
+                $trainers->where('email', 'like', '%' . $email . '%');
+            }
+            if ($specialty) {
+                $trainers->where('specialty', 'like', '%' . $specialty . '%');
+            }
+            
+            $trainers = $trainers->get();
+
+            return view('trainers/trainers', ['trainers' => $trainers]);
+        }
         $trainers = Trainer::all();
         return view('trainers/trainers', ['trainers' => $trainers]);
     }

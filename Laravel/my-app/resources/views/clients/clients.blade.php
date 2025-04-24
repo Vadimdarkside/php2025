@@ -75,7 +75,7 @@
         </tr>
     </thead>
     <tbody>
-       @if ($clients)
+       @if (!empty($clients))
         @foreach($clients as $client)
             <tr>
                 <td>{{ $client->id }}</td>

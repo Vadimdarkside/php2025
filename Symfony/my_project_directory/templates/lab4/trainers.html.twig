@@ -1,0 +1,44 @@
+<h2>Список тренерів</h2>
+
+<form method="GET" action="{{ path('trainers') }}">
+    <input type="hidden" name="filter" value="true">
+
+    <label>Ім’я:</label>
+    <input type="text" name="first_name" value="{{ app.request.get('first_name') }}">
+
+    <label>Прізвище:</label>
+    <input type="text" name="last_name" value="{{ app.request.get('last_name') }}">
+
+    <label>Email:</label>
+    <input type="text" name="email" value="{{ app.request.get('email') }}">
+
+    <label>Спеціальність:</label>
+    <input type="text" name="specialty" value="{{ app.request.get('specialty') }}">
+
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Ім’я</th>
+            <th>Прізвище</th>
+            <th>Email</th>
+            <th>Спеціальність</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for trainer in trainers %}
+            <tr>
+                <td>{{ trainer.firstName }}</td>
+                <td>{{ trainer.lastName }}</td>
+                <td>{{ trainer.email }}</td>
+                <td>{{ trainer.specialty }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Немає результатів</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

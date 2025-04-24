@@ -22,10 +22,45 @@ class TrainerController extends AbstractController
     }
 
     #[Route('/trainers', methods: ['GET'], name: 'trainers')]
-    public function index(): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $trainers = $this->trainersRepository->findAll();
-        return $this->json($trainers);
+        $repo = $em->getRepository(Trainers::class);
+        $qb = $repo->createQueryBuilder('t');
+
+        if ($request->query->get('filter')) {
+            $first_name = $request->query->get('first_name');
+            $last_name = $request->query->get('last_name');
+            $email = $request->query->get('email');
+            $specialty = $request->query->get('specialty');
+
+            if ($first_name) {
+                $qb->andWhere('t.first_name LIKE :first_name')
+                   ->setParameter('first_name', '%' . $first_name . '%');
+            }
+
+            if ($last_name) {
+                $qb->andWhere('t.last_name LIKE :last_name')
+                   ->setParameter('last_name', '%' . $last_name . '%');
+            }
+
+            if ($email) {
+                $qb->andWhere('t.email LIKE :email')
+                   ->setParameter('email', '%' . $email . '%');
+            }
+
+            if ($specialty) {
+                $qb->andWhere('t.specialty LIKE :specialty')
+                   ->setParameter('specialty', '%' . $specialty . '%');
+            }
+
+            $trainers = $qb->getQuery()->getResult();
+        } else {
+            $trainers = $repo->findAll();
+        }
+
+        return $this->render('lab4/trainers.html.twig', [
+            'trainers' => $trainers,
+        ]);
     }
 
     #[Route('/trainers/create', name: 'trainers_create')]

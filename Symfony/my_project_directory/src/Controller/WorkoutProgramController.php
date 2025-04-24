@@ -24,13 +24,46 @@ class WorkoutProgramController extends AbstractController
         $this->em = $manager;
     }
 
-    #[Route('/workout-programs', methods: ['GET'], name: 'workout_programs')]
-    public function index(): Response
+    #[Route('/programs', methods: ['GET'], name: 'workout_programs')]
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $workoutPrograms = $this->workoutProgramsRepository->findAll();
-        dd($workoutPrograms);
-        return $this->render('lab3GymView/index.html.twig', [
-            'workoutPrograms' => $workoutPrograms
+        $repo = $em->getRepository(WorkoutPrograms::class);
+        $qb = $repo->createQueryBuilder('w');
+
+        if ($request->query->get('filter')) {
+            $name = $request->query->get('name');
+            $description = $request->query->get('description');
+            $duration = $request->query->get('duration');
+            $trainer_id = $request->query->get('trainer_id');
+
+            if ($name) {
+                $qb->andWhere('w.name LIKE :name')
+                   ->setParameter('name', '%' . $name . '%');
+            }
+
+            if ($description) {
+                $qb->andWhere('w.description LIKE :description')
+                   ->setParameter('description', '%' . $description . '%');
+            }
+
+            if ($duration) {
+                $qb->andWhere('w.duration >= :duration')
+                   ->setParameter('duration', $duration);
+            }
+
+            if ($trainer_id) {
+                $qb->andWhere('w.Trainer = :trainer_id')
+                   ->setParameter('trainer_id', $trainer_id);
+            }
+            $programs = $qb->getQuery()->getResult();
+            // var_dump($programs);
+
+        } else {
+            $programs = $repo->findAll();
+        }
+
+        return $this->render('lab4/programs.html.twig', [
+            'programs' => $programs,
         ]);
     }
 

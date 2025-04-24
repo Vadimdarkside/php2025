@@ -1,0 +1,44 @@
+<h2>Програми тренувань</h2>
+
+<form method="GET" action="{{ path('workout_programs') }}">
+    <input type="hidden" name="filter" value="true">
+
+    <label>Назва:</label>
+    <input type="text" name="name" value="{{ app.request.get('name') }}">
+
+    <label>Опис:</label>
+    <input type="text" name="description" value="{{ app.request.get('description') }}">
+
+    <label>Тривалість (хвилин):</label>
+    <input type="number" name="duration" value="{{ app.request.get('duration') }}">
+
+    <label>ID тренера:</label>
+    <input type="number" name="trainer_id" value="{{ app.request.get('trainer_id') }}">
+
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>Опис</th>
+            <th>Тривалість</th>
+            <th>Тренер</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for program in programs %}
+            <tr>
+                <td>{{ program.name }}</td>
+                <td>{{ program.description }}</td>
+                <td>{{ program.duration }} хв</td>
+                <td>{{ program.trainer.firstName }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Немає результатів</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

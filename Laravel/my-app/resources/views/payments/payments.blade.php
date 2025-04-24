@@ -27,6 +27,30 @@
     </div>
     <button type="submit">Submit</button>
 </form>
+
+<h1>Filter</h1>
+    <form action="{{route('/payments')}}" method="GET">
+        <div>
+            <label for="client_id">Filter by Client:</label>
+            <input type="text" name="client_id" id="client_id" value="{{ request('client_id') }}">
+        </div>
+        <div>
+            <label for="amount">Filter by amount:</label>
+            <input type="text" name="amount" id="amount" value="{{ request('amount') }}">
+        </div>
+        <div>
+            <label for="payment_date">Filter by payment_date:</label>
+            <input type="date" name="payment_date" id="payment_date" value="{{ request('payment_date') }}">
+        </div>
+        <div>
+            <label for="method">Filter by method:</label>
+            <input type="text" name="method" id="method" value="{{ request('method') }}">
+        </div>
+        <input type="hidden" name="filter" value="true">
+        <button type="submit">Apply Filters</button>
+    </form>
+
+
 <table cellpadding="10">
     <thead>
         <tr>
@@ -39,6 +63,7 @@
         </tr>
     </thead>
     <tbody>
+        @if ($payments)
         @foreach($payments as $payment)
             <tr>
                 <td>{{ $payment->id }}</td>
@@ -56,6 +81,9 @@
                 </td>
             </tr>
         @endforeach
+        @else
+        <div>No payments</div>
+        @endif
     </tbody>
 </table>
 </body>

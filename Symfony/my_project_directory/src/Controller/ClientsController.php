@@ -6,6 +6,7 @@ use App\Entity\Clients;
 use App\Form\ClientFormType;
 use App\Repository\ClientsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -22,67 +23,75 @@ class ClientsController extends AbstractController
     }
 
     #[Route('/clients',methods:['GET'], name:'clients')]
-    public function index(Request $request, EntityManagerInterface $em)
-    {
-        $repo = $em->getRepository(Clients::class);
-        $qb = $repo->createQueryBuilder('c');
+    public function index(Request $request, EntityManagerInterface $em): Response
+{
+    $repo = $em->getRepository(Clients::class);
+    $qb = $repo->createQueryBuilder('c');
 
-        if ($request->query->get('filter')) {
-            $first_name = $request->query->get('first_name');
-            $last_name = $request->query->get('last_name');
-            $email = $request->query->get('email');
-            $phone = $request->query->get('phone');
-            $registration_date = $request->query->get('registration_date');
+    $filters = [];
+    if ($request->query->get('filter')) {
+        $first_name = $request->query->get('first_name');
+        $last_name = $request->query->get('last_name');
+        $email = $request->query->get('email');
+        $phone = $request->query->get('phone');
+        $registration_date = $request->query->get('registration_date');
 
-            if ($first_name) {
-                $qb->andWhere('c.first_name LIKE :first_name')
+        if ($first_name) {
+            $qb->andWhere('c.first_name LIKE :first_name')
                 ->setParameter('first_name', '%' . $first_name . '%');
-            }
-
-            if ($last_name) {
-                $qb->andWhere('c.last_name LIKE :last_name')
-                ->setParameter('last_name', '%' . $last_name . '%');
-            }
-
-            if ($email) {
-                $qb->andWhere('c.email LIKE :email')
-                ->setParameter('email', '%' . $email . '%');
-            }
-
-            if ($phone) {
-                $qb->andWhere('c.phone LIKE :phone')
-                ->setParameter('phone', '%' . $phone . '%');
-            }
-
-            if ($registration_date) {
-                $year = $registration_date;
-                $startDate = new \DateTime("$year-01-01");
-                $endDate = new \DateTime("$year-12-31 23:59:59");
-            
-                $qb->andWhere('c.registration_date BETWEEN :start AND :end')
-                   ->setParameter('start', $startDate)
-                   ->setParameter('end', $endDate);
-            }
-
-            $clients = $qb->getQuery()->getResult();
-        } else {
-            $clients = $repo->findAll();
+            $filters['first_name'] = $first_name;
         }
 
-        return $this->render('lab4/clients.html.twig', [
-            'clients' => $clients,
-        ]);
-    }
-    // public function index():Response
-    // {
-    //     $clients = $this->clientsRepository->findAll();
-    //     dd($clients);
-    //     return $this->render('lab3GymView/index.html.twig',
-    // [
-    //     'clients'=>$clients
-    // ]);
-    // }
+        if ($last_name) {
+            $qb->andWhere('c.last_name LIKE :last_name')
+                ->setParameter('last_name', '%' . $last_name . '%');
+            $filters['last_name'] = $last_name;
+        }
 
+        if ($email) {
+            $qb->andWhere('c.email LIKE :email')
+                ->setParameter('email', '%' . $email . '%');
+            $filters['email'] = $email;
+        }
+
+        if ($phone) {
+            $qb->andWhere('c.phone LIKE :phone')
+                ->setParameter('phone', '%' . $phone . '%');
+            $filters['phone'] = $phone;
+        }
+
+        if ($registration_date) {
+            $year = $registration_date;
+            $startDate = new \DateTime("$year-01-01");
+            $endDate = new \DateTime("$year-12-31 23:59:59");
+
+            $qb->andWhere('c.registration_date BETWEEN :start AND :end')
+                ->setParameter('start', $startDate)
+                ->setParameter('end', $endDate);
+            $filters['registration_date'] = $registration_date;
+        }
+    }
+
+    $page = max(1, (int)$request->query->get('page', 1));
+    $limit = (int)$request->query->get('limit', 5);
+    $offset = ($page - 1) * $limit;
+
+    $qb->setFirstResult($offset)
+       ->setMaxResults($limit);
+
+    $paginator = new Paginator($qb->getQuery());
+    $totalItems = count($paginator);
+    $totalPages = ceil($totalItems / $limit);
+
+    return $this->render('lab4/clients.html.twig', [
+        'clients' => $paginator,
+        'currentPage' => $page,
+        'totalPages' => $totalPages,
+        'limit' => $limit,
+        'filters' => $filters,
+    ]);
+}
+   
     #[Route('/clients/create', name:'clients_create')]
     public function create(Request $request):Response
     {

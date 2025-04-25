@@ -27,7 +27,14 @@
         <label>Рік реєстрації:</label>
         <input type="number" name="registration_date" placeholder="напр. 2024" value="{{ filters.registration_date ?? '' }}">
     </div>
-
+    <div>
+        <label>Кількість на сторінку:</label>
+        <select name="limit">
+            {% for size in [5, 10, 25, 50] %}
+                <option value="{{ size }}" {% if size == limit %}selected{% endif %}>{{ size }}</option>
+            {% endfor %}
+        </select>
+    </div>
     <button type="submit">Фільтрувати</button>
 </form>
 
@@ -58,4 +65,19 @@
             {% endfor %}
         </tbody>
     </table>
+{% endif %}
+
+{% if totalPages > 1 %}
+    <div>
+        <strong>Сторінки:</strong>
+        {% for i in 1..totalPages %}
+            {% set params = app.request.query.all %}
+            {% set url = path('clients', params|merge({'page': i})) %}
+            {% if i == currentPage %}
+                <strong>[{{ i }}]</strong>
+            {% else %}
+                <a href="{{ url }}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+    </div>
 {% endif %}

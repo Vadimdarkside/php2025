@@ -57,6 +57,14 @@
             <label for="registration_date">Filter by Registration Date:</label>
             <input type="date" name="registration_date" id="registration_date" value="{{ request('registration_date') }}">
         </div>
+        <div>
+            <label for="per_page">Items per Page:</label>
+            <select name="per_page" id="per_page">
+                <option value="5" {{ request('per_page') == 5 ? 'selected' : '' }}>5</option>
+                <option value="10" {{ request('per_page') == 10 ? 'selected' : '' }}>10</option>
+                <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
+            </select>
+        </div>
         <input type="hidden" name="filter" value="true">
         <button type="submit">Apply Filters</button>
     </form>
@@ -99,5 +107,6 @@
        @endif
     </tbody>
 </table>
+{{ $clients->appends(request()->query())->links() }}
 </body>
 </html>

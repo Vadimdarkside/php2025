@@ -10,34 +10,34 @@ class ClientController extends Controller
 {
     public function read(Request $request)
     {
-        if($request->get('filter'))
-        {
+        $clientsQuery = Client::query();
+
+        if ($request->get('filter')) {
             $first_name = $request->get('first_name');
             $last_name = $request->get('last_name');
             $email = $request->get('email');
             $phone = $request->get('phone');
             $registration_date = $request->get('registration_date');
-            $clients = Client::query();
+
             if ($first_name) {
-                $clients->where('first_name', 'like', '%' . $first_name . '%');
+                $clientsQuery->where('first_name', 'like', '%' . $first_name . '%');
             }
             if ($last_name) {
-                $clients->where('last_name', 'like', '%' . $last_name . '%');
+                $clientsQuery->where('last_name', 'like', '%' . $last_name . '%');
             }
             if ($email) {
-                $clients->where('email', 'like', '%' . $email . '%');
+                $clientsQuery->where('email', 'like', '%' . $email . '%');
             }
             if ($phone) {
-                $clients->where('phone', 'like', '%' . $phone . '%');
+                $clientsQuery->where('phone', 'like', '%' . $phone . '%');
             }
             if ($registration_date) {
-                $clients->whereYear('registration_date', $registration_date);
+                $clientsQuery->whereYear('registration_date', $registration_date);
             }
-            $clients = $clients->get();
-
-            return view('clients/clients', ['clients' => $clients]);
         }
-        $clients = Client::all();
+
+        $perPage = $request->get('per_page', 5);
+        $clients = $clientsQuery->paginate($perPage);
         return view('clients/clients', ['clients' => $clients]);
     }
     public function create(Request $request)

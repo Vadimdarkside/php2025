@@ -28,12 +28,50 @@ class PaymentController extends AbstractController
     }
 
     #[Route('/payments', methods: ['GET'], name: 'payments')]
-    public function index(): Response
+    public function index(Request $request, EntityManagerInterface $em): Response
     {
-        $payments = $this->paymentsRepository->findAll();
-        dd($payments);
-        return $this->render('lab3GymView/payments.html.twig', [
-            'payments' => $payments
+        $repo = $em->getRepository(Payments::class);
+        $qb = $repo->createQueryBuilder('p');
+
+        if ($request->query->get('filter')) {
+            $client_id = $request->query->get('client_id');
+            $amount_min = $request->query->get('amount_min');
+            $amount_max = $request->query->get('amount_max');
+            $payment_date = $request->query->get('payment_date');
+            $method = $request->query->get('method');
+
+            if ($client_id) {
+                $qb->andWhere('p.client_id = :client_id')
+                   ->setParameter('client_id', $client_id);
+            }
+
+            if ($amount_min) {
+                $qb->andWhere('p.amount >= :amount_min')
+                   ->setParameter('amount_min', $amount_min);
+            }
+
+            if ($amount_max) {
+                $qb->andWhere('p.amount <= :amount_max')
+                   ->setParameter('amount_max', $amount_max);
+            }
+
+            if ($payment_date) {
+                $qb->andWhere('p.payment_date >= :payment_date')
+                   ->setParameter('payment_date', $payment_date);
+            }
+
+            if ($method) {
+                $qb->andWhere('p.method LIKE :method')
+                   ->setParameter('method', '%' . $method . '%');
+            }
+
+            $payments = $qb->getQuery()->getResult();
+        } else {
+            $payments = $repo->findAll();
+        }
+
+        return $this->render('lab4/payments.html.twig', [
+            'payments' => $payments,
         ]);
     }
 

@@ -1,0 +1,47 @@
+<h2>Платежі</h2>
+
+<form method="GET" action="{{ path('payments') }}">
+    <input type="hidden" name="filter" value="true">
+
+    <label>Клієнт (ID):</label>
+    <input type="number" name="client_id" value="{{ app.request.get('client_id') }}">
+
+    <label>Мінімальна сума:</label>
+    <input type="number" step="0.01" name="amount_min" value="{{ app.request.get('amount_min') }}">
+
+    <label>Максимальна сума:</label>
+    <input type="number" step="0.01" name="amount_max" value="{{ app.request.get('amount_max') }}">
+
+    <label>Дата платежу:</label>
+    <input type="date" name="payment_date" value="{{ app.request.get('payment_date') }}">
+
+    <label>Метод:</label>
+    <input type="text" name="method" value="{{ app.request.get('method') }}">
+
+    <button type="submit">Фільтрувати</button>
+</form>
+
+<table>
+    <thead>
+        <tr>
+            <th>Клієнт</th>
+            <th>Сума</th>
+            <th>Дата платежу</th>
+            <th>Метод</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payment in payments %}
+            <tr>
+                <td>{{ payment.clientId.id }} - {{ payment.clientId.firstName }} {{ payment.clientId.lastName }}</td>
+                <td>{{ payment.amount }} грн</td>
+                <td>{{ payment.paymentDate|date('Y-m-d') }}</td>
+                <td>{{ payment.method }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4">Немає результатів</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

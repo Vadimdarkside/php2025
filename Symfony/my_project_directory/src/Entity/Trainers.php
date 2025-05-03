@@ -25,7 +25,11 @@ class Trainers implements UserInterface
 
     #[ORM\Column(length: 100)]
     private ?string $email = null;
+    
+    #[ORM\Column(length: 255)]
     private string $password;
+
+    #[ORM\Column(type: "json")]
     private array $roles = [];
     public function getRoles(): array
     {

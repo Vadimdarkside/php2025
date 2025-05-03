@@ -2,11 +2,12 @@
 
 namespace App\Entity;
 
-use App\Repository\TrainersRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TrainersRepository;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: TrainersRepository::class)]
-class Trainers
+class Trainers implements UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,7 +25,43 @@ class Trainers
 
     #[ORM\Column(length: 100)]
     private ?string $email = null;
+    private string $password;
+    private array $roles = [];
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        $roles[] = 'ROLE_TRAINER';
+        return array_unique($roles);
+    }
 
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function eraseCredentials(): void
+    {
+       
+    }
     public function getId(): ?int
     {
         return $this->id;

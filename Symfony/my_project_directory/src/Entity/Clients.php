@@ -7,9 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: ClientsRepository::class)]
-class Clients
+class Clients implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,6 +26,12 @@ class Clients
 
     #[ORM\Column(length: 100)]
     private ?string $email = null;
+
+    #[ORM\Column(type: 'json')]
+    private array $roles = [];
+
+    #[ORM\Column]
+    private string $password;
 
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phone = null;
@@ -54,6 +62,38 @@ class Clients
         return $this->id;
     }
 
+    public function getRoles(): array
+    {
+        $roles = $this->roles;
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
+    }
+
+    public function setRoles(array $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email; 
+    }
+
     public function getFirstName(): ?string
     {
         return $this->first_name;
@@ -77,7 +117,10 @@ class Clients
 
         return $this;
     }
-
+    public function eraseCredentials(): void
+    {
+    
+    }
     public function getEmail(): ?string
     {
         return $this->email;

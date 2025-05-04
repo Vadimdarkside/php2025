@@ -1,0 +1,63 @@
+<form method="post" action="/api/login_check">
+    <label>Email:</label>
+    <input type="email" name="email" value="Bondar@gmail.com" required>
+
+    <label>Пароль:</label>
+    <input type="password" name="password" value="password" required>
+
+    <button type="submit">Увійти</button>
+</form>
+
+<script>
+   document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    fetch('/api/login_check', {
+        method: 'POST',
+        body: JSON.stringify({
+            email: formData.get('email'),
+            password: formData.get('password')
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('Invalid credentials');
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.token) {
+            localStorage.setItem('jwt_token', data.token);
+
+            fetch('/api/client/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + data.token,
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Not authorized');
+                return res.text();
+            })
+            .then(clientHtml => {
+                document.body.innerHTML = clientHtml;
+            })
+            .catch(error => {
+                alert('Не вдалося завантажити клієнта: ' + error.message);
+            });
+
+        } else {
+            alert('Invalid credentials');
+        }
+    })
+    .catch(error => {
+        alert(error.message);
+    });
+});
+
+</script>

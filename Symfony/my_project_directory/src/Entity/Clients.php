@@ -72,7 +72,7 @@ class Clients implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoles(array $roles): static
     {
-        $this->roles = $roles;
+        $this->roles = $roles ?? ['ROLE_USER'];
 
         return $this;
     }

@@ -4,76 +4,85 @@ namespace App\Http\Controllers;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
-    public function read(Request $request)
+    public function __construct()
     {
-        $clientsQuery = Client::query();
+        $this->middleware(['auth:api', 'role:admin']);
+    }
 
-        if ($request->get('filter')) {
-            $first_name = $request->get('first_name');
-            $last_name = $request->get('last_name');
-            $email = $request->get('email');
-            $phone = $request->get('phone');
-            $registration_date = $request->get('registration_date');
+    public function index(): JsonResponse
+    {
+        return response()->json(Client::all(), 200);
+    }
 
-            if ($first_name) {
-                $clientsQuery->where('first_name', 'like', '%' . $first_name . '%');
-            }
-            if ($last_name) {
-                $clientsQuery->where('last_name', 'like', '%' . $last_name . '%');
-            }
-            if ($email) {
-                $clientsQuery->where('email', 'like', '%' . $email . '%');
-            }
-            if ($phone) {
-                $clientsQuery->where('phone', 'like', '%' . $phone . '%');
-            }
-            if ($registration_date) {
-                $clientsQuery->whereYear('registration_date', $registration_date);
-            }
+    public function show($id): JsonResponse
+    {
+        $client = Client::find($id);
+        if (!$client) {
+            return response()->json(['message' => 'Client not found'], 404);
         }
 
-        $perPage = $request->get('per_page', 5);
-        $clients = $clientsQuery->paginate($perPage);
-        return view('clients/clients', ['clients' => $clients]);
+        return response()->json($client, 200);
     }
-    public function create(Request $request)
-    {
-        $incomeFields = $request->validate([
-            "first_name"=>'required',
-            "last_name"=>'required',
-            "email"=>'required',
-            "phone"=>'required',
-            "registration_date" => 'required'
-        ]);
-        Client::create($incomeFields);
-        return redirect('/clients');
-    }   
-    public function showUpdateForm($id)
-    {
-        $client = Client::findOrFail($id);
-        return view('clients/client-edit', ['client' => $client]);
-    }   
-    public function update($id, Request $request)
-    {
-        $client = Client::findOrFail($id);
-        $incomeFields = $request->validate([
-            "first_name"=>'required',
-            "last_name"=>'required',
-            "email"=>'required',
-            "phone"=>'required'
-        ]);
-        $client->update($incomeFields);
-        return redirect('/clients');
-    }   
 
-    public function delete($id)
+    public function store(Request $request): JsonResponse
     {
-        $client = Client::findOrFail($id);
+        $validated = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'last_name'  => 'required|string|max:255',
+            'email'      => 'required|email|unique:clients',
+            'password'   => 'required|string|min:6',
+            'phone'      => 'nullable|string',
+            'roles'      => 'required|string'
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+        $validated['registration_date'] = now();
+
+        $client = Client::create($validated);
+
+        return response()->json($client, 201);
+    }
+
+    public function update(Request $request, $id): JsonResponse
+    {
+        $client = Client::find($id);
+        if (!$client) {
+            return response()->json(['message' => 'Client not found'], 404);
+        }
+
+        $validated = $request->validate([
+            'first_name' => 'sometimes|required|string|max:255',
+            'last_name'  => 'sometimes|required|string|max:255',
+            'email'      => 'sometimes|required|email|unique:clients,email,' . $id,
+            'password'   => 'sometimes|required|string|min:6',
+            'phone'      => 'nullable|string',
+            'roles'      => 'sometimes|required|string'
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        }
+
+        $client->update($validated);
+
+        return response()->json($client, 200);
+    }
+
+    public function destroy($id): JsonResponse
+    {
+        $client = Client::find($id);
+        if (!$client) {
+            return response()->json(['message' => 'Client not found'], 404);
+        }
+
         $client->delete();
-        return redirect('/clients');
-    }   
+
+        return response()->json(['message' => 'Client deleted successfully'], 200);
+    }
 }
